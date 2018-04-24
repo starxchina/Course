@@ -2,6 +2,35 @@
 由Starx搬运总结
 资源来自 《Github入门与实践》
 
+常用功能：
+	1、远程代码更新后，同步到本地未更新的仓库  参考自//https://blog.csdn.net/liang0000zai/article/details/50724632
+		1）cd 到本地仓库
+		2）git remote -v    //查看远程仓库
+		3）git fetch origin master:temp     //在本地新建分支，并将远程origin仓库的master分支下的代码下载到本地temp分枝下
+		4）git diff temp     //查看temp与本地master的不同
+		5）git merge temp     //将temp代码与master中的合并
+		6）git branch -d temp     //删除temp分支
+	
+	2、在本地更新后，上传到远程仓库
+		1）git pull origin master
+		2）git add XXXX
+		3)git commit -m "XXXX"
+		4)git push
+	
+	3、在不删除本地文件夹的情况下，删除远程仓库的文件夹
+		1)git rm -r --cached XXXX     //XXXX便是文件夹的名字
+		2)git commit -m "delete XXXX dir"
+		3)git push -u origin master
+		
+
+
+
+
+
+
+
+具体分解:
+
 初始设置:
 	git config --global user.name "你的名字"
 	git config --global user.email "你的邮箱"
