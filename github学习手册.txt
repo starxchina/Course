@@ -1,0 +1,119 @@
+系统:OSX 10.13.3
+由Starx搬运总结
+资源来自 《Github入门与实践》
+
+初始设置:
+	git config --global user.name "你的名字"
+	git config --global user.email "你的邮箱"
+	git config --global color.ui auto                   //可使得命令行输出美观
+	//以上三条存储生成文件，在  ~/.gitconfig  文件中，可进行设置，此文件在传输中起到公开作用
+	
+设置SSH Key
+	ssh-keygen -t rsa -C "你的邮箱"
+	//随后生成三个冒号语句 （第一个按回车，第二个输入密码，第三个确认密码）（密码需要在认证时输入）
+	//在本机中找到以下路径     /Users/电脑名字/.ssh    在其中有文件id_rsa.pub文件，将之内容复制到网页的相应位置
+	cat ~/.ssh/id_rsa.pub      //也可以使用此命令查看id_rsa.pub文件
+	ssh -T git@github.com.   //使用此条命令查看是否成功   输入有....successful....字样即成功
+	//https://www.cnblogs.com/xiaogangfan/p/5990118.html       可以参看此博客
+	
+公开代码
+	克隆已有仓库
+		git clone https://github.com/starxchina/hello-word.git //在对应的文件夹下克隆，就会复制到其下
+		在此克隆来的文件夹!!!下进行操作：
+			git status    //如果在这个文件夹下创建了一个新的文件，通过此命令，可以查看该文件是否提交到仓库(Untracked files)
+			git add XXXX     //XXXX表示未提交的文件,将之存放于暂存区
+			git commit -m "提交信息"     //注释一下文件并提交
+			git log           //查看提交日志
+			git push        //上传递到仓库，就可以在仓库中查看到更新了
+			
+基本操作流程：
+	mkdir   XXXX       //新建XXXX文件夹
+	git init     //初始化仓库   新建文件夹时使用
+	touch XXXX    //新建XXXX文件，要加后缀
+	git status    //查看状态
+	git add XXXX    //将XXXX文件加入暂存区
+	git commit -m "提交信息"      //将当前暂存区中的文件保存到仓库的历史记录中，""之中的是文件的提交概述
+		//如果想要记述的更加详细，使用以下命令
+		git commit      //使用之要了解vi的基本信息      在第一个空行后键入信息，即相当于在git commit -m  ""的双引号中键入信息
+	git log         //查看仓库中提交的日志，包括可以查看什么人在什么时候进行了提交或合并
+		git log --pretty=short      //只让程序显示第一行简述信息
+		git log XXXX    //在git log 后加上目录名，便会只显示盖目录下的日志，如果加的是文件名，就会只显示与该文件相关的日志
+		git log -p //查看提交文件所带来的改动，文件的先后差别就会显示在提交信息之后
+		git log -p XXXX   //查看XXXX文件的提交日志及提交前后的差别
+	git diff    //查看工作树、暂存区、最新提交之间的差别，+表示新添加的行，-表示被删除的行    （我存在中文乱码问题）
+		git diff HEAD   //查看与最新提交的差别（就是本次提交和上次提交的差别）
+
+
+由于分支操作我暂时还没用到，等以后再写
+//分支操作(多用于并行开发):
+//	git branch    //将分支名列表显示，同时确认当前所在的分支      *表示当前所在的分支
+//	git checkout -b       //创建、切换分支
+//		eg. git checkout -b XXX   //创建名为XXX的分支，并转到该分支下
+//		//这时，提交文件就会提交到该分枝下，并且不会影响到其他分支的同名文件内容
+//		
+//		git checkout master   //切换到master分枝下
+//		git checkout -       //切换回上一个分支
+//	
+//	合并分支：
+//		//合并到master分支
+//		git checkout master   //先切换到master分枝下
+//		git merge --no-ff XXX    //将XXX分支合并到master分支    :x保存并退出
+//		git log --graph      //以图表的形式查看分支
+	
+推送至远程仓库
+	//先在github上建立仓库，不要勾选自动生成RAEDME.me文件
+	//git remote add 命令将相应仓库设置成本地仓库的远程仓库
+	选择一个文件夹
+	git init
+	git add XXXX   //文件
+	git commit -m "注释"
+	git remote add origin git@github.com:starxchina/Course.git //将git@github.com:starxchina/Course.git远程仓库的名称设置为origin（标识符）
+	
+	//git push 推送至master分支
+	git push -u origin master    //在master分支下操作，将其推送至master分支
+						   //-u参数可以在推送时，将origin仓库的master分支设置为本地仓库当前分支的上游。添加了这个参数，以后git pull时，可直接从远程仓库的master分之获取内容，就不用再设置参数
+						   //origin为远程仓库标识符
+	//推送到master以外的分支
+	git checkout -b XXXX    //切换到XXXX分支
+	git push -u origin XXXX   //推送到XXXX分支
+		
+从远程仓库获取
+	git clone git@github.com:starxchina/Course.git		//执行git clone命令后我们默认处于master分支下，同时系统会自动将origin设置成为该远程仓库的标识符
+	                                                    //这里clone后只是clone master分支，也就是说，在本地使用git branch只显示 *master
+	git branch -a //查看当前分支的相关信息   添加-a参数可以同时显示本地仓库和远程仓库的信息
+	git checkout -b XXXX origin/XXXX    //将XXXX分支获取至本地仓库
+								  //-b参数后面跟的是在本地仓库中新建的分支名，一般设置为和远程仓库同名  origin/XXXX表示本地仓库内容的远程来源，即从远程分支获取
+	
+	//向本地的XXXX分支提交更改后
+	git diff   //查看区别
+	git commit -am "提交信息的注释"  //注意，这里是向本地在提交
+	
+	git push    //推送到远程分支
+	
+	git pull origin XXXX     //在多人协作时，在本地更新别人上传代码，实现代码的最新版本.   XXXX为分支
+	
+	
+Pull Request 大致流程：
+	1)Fork
+	2)clone
+	3)使用git branch -a查看本地与远程仓库的分支
+	4)创建一个9特性分支用于pull request
+		git checkout -b XXXX
+	5)在相应要修改的文件中修改一下,使用git diff查看区别
+	6)git add .
+	  git commit -m "XXXX"
+	7)git push origin XXXX //XXXX为刚才创建的分支名
+	8)登陆发送即可
+	
+其他：
+	ls      //查看当前文件夹中的文件（不会显示文件夹）
+	rm 文件名                     //删除文件
+	sudo rm -r -f 文件夹名  //删除文件夹
+	
+	
+	
+	
+	
+			
+		
+	
