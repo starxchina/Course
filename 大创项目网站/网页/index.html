@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>教务系统</title>
+</head>
+<!--  <frameset cols="25%,*">
+  <frame name="left" src="logon-left.html" scrolling="auto">
+  <frame src="UntitledFrame-1"></frameset>
+  <noframes> -->
+
+<body>
+    <form name="LoginForm" method="post" action="login_conn.php">
+        <h3>请输入用户信息</h3> 用户名：
+        <input type="text" name="user" size="16" maxlength="9" required="required" autocomplete="on" />
+        <!--autocomplete为自动填充记忆属性-->
+        <br>
+        <br> 密码: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="password" name="password" size="16" , maxlength="16" required="required" autocomplete="on" />
+        <!--autocomplete为自动填充记忆属性  required提示输入学号-->
+        <br>
+        <br> 验证码：
+        <input type="text" name="inputRandom" id="inputRandom" size="4" maxlength="4">
+        <br>
+        <br>
+        <canvas id="canvas" width="150" height="50"></canvas>&nbsp;&nbsp;&nbsp;
+        <a href="#" id="changeImg">看不清，换一张</a>
+        <script src="js/yanzhengma.js"></script>
+        <input type="text" id="hidetext" name="hidetext" value="" style="visibility:hidden" size="4" maxlength="4">
+        <!--隐藏的标签，有待改正,php和js的执行顺序不同！-->
+        <br>
+        <br>
+        <br>
+        <input type="radio" name="selection" value="student" checked>学生&nbsp;&nbsp;
+        <input type="radio" name="selection" value="teacher">教师&nbsp;&nbsp;
+        <input type="radio" name="selection" value="officer">管理
+        <br>
+        <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="submit" name="submit" value="login">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="reset" value="重置">
+        <!--内容重置-->
+    </form>
+    <form name="Register" method="post" action="register.html">
+        <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="submit" name="register" value="register">
+    </form>
+</body>
+
+</html>

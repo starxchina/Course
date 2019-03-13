@@ -1,0 +1,4 @@
+function:
+    1.import the file(.txt)
+    2.you can modify the imported file in  the textEdit_1(textEdit_1 and textEdit_2 are on the left of the layout,textEdit_3 is on the right )
+      when you preprossing,it only deal with the txt in the textEdit_1.

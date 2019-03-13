@@ -1,0 +1,7 @@
+Precondition:
+	1.The default first production's non-terminating character is start symbol.
+	2.There is only one string of terminating characters in revelant production.
+	3.The default every production's end is its terminating characters if it has.
+Function:
+	Delete the production which is unstoppable 	
+	

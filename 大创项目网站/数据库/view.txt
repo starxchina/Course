@@ -1,0 +1,11 @@
+CREATE 
+    ALGORITHM = UNDEFINED 
+    DEFINER = `root`@`localhost` 
+    SQL SECURITY DEFINER
+VIEW `datapublishing` AS
+    SELECT 
+        `snoandsname`.`sgrade` AS `value`,
+        COUNT(`snoandsname`.`sgrade`) AS `count`
+    FROM
+        `snoandsname`
+    GROUP BY `snoandsname`.`sgrade`

@@ -1,0 +1,367 @@
+#include<iostream>
+#include<string>
+using namespace std;
+//全局变量，保留字表
+char exitWord[32][20] = {
+	   "auto", "break", "case", "char", "const", "continue",
+	     "default", "do", "double", "else", "enum", "extern",
+	     "float", "for", "goto", "if", "int", "long",
+	     "register", "return", "short", "signed", "sizeof", "static",
+	     "struct", "switch", "typedef", "union", "unsigned", "void",
+	     "volatile", "while"
+	 };
+//界符运算符表,根据需要可以自行增加
+  char operatorOrDelimiter[36][10] = {
+	     "+", "-", "*", "/", "<", "<=", ">", ">=", "=", "==",
+	     "!=", ";", "(", ")", "^", ",", "\"", "\'", "#", "&",
+	     "&&", "|", "||", "%", "~", "<<", ">>", "[", "]", "{",
+	     "}", "\\", ".", "\?", ":", "!"
+	 };
+  static  char IDentifierTbl[1000][50] = { "" };//标识符表
+  
+  //查找保留字
+  int searchReserve(char exitWord[][20], char s[])
+	   {
+	       for (int i = 0; i < 32; i++)
+		       {
+		           if (strcmp(exitWord[i], s) == 0)
+			           {//若成功查找，则返回种别码
+			               return i + 1;//返回种别码
+			           }
+		      }
+	      return -1;//否则返回-1，代表查找不成功，即为标识符
+	   }
+
+  //判断是否为字母
+  bool IsLetter(char letter)
+	  {//注意C和Cpp语言允许下划线也为标识符的一部分可以放在首部或其他地方
+	       if (letter >= 'a'&&letter <= 'z' || letter >= 'A'&&letter <= 'Z' || letter == '_')
+		       {
+		           return true;
+		       }
+	      else
+		       {
+		           return false;
+		      }
+	  }
+  //判断是否为数字
+   bool IsDigit(char digit)
+	  {
+	       if (digit >= '0'&&digit <= '9')
+		       {
+		           return true;
+		       }
+	      else
+		      {
+		           return false;
+		       }
+	   }
+   //去除无用的字符和注释
+   void filterResource(char r[], int pProject)
+   {
+	   char tempString[10000]; //暂时的字符串
+	   int count = 0,j;
+	   for (int i = 0; i <= pProject; i++)
+	   {
+		   if (r[i] == '/'&&r[i + 1] == '/')
+		   {//若为单行注释“//”,则去除注释后面的东西，直至遇到回车换行
+			   while (r[i] != '\n')
+			   {
+				   i++;//向后扫描
+			   }
+		   }
+		   if (r[i] == '/'&&r[i + 1] == '*')
+		   {//若为多行注释“/*....*/”则去除该内容
+			   j = i;
+			   i += 2;
+			   while (r[i] != '*' || r[i + 1] != '/')
+			   {
+				   i++;//继续扫描
+				   if (r[i] =='\0')
+				   {   
+					   cout << "注释出错，没有找到 */！！！" << endl; //此时对其继续进行词法分析
+					   break;
+				   }
+			   }
+			   if (r[i] == '\0') i = j; //此时对其继续分析
+			   else i += 2;//跨过“*/”
+		   }
+		   if (r[i] != '\n'&&r[i] != '\t'&&r[i] != '\v'&&r[i] != '\r')
+		   {//若出现无用字符，则过滤；否则加载
+			   tempString[count++] = r[i];
+		   }
+	   }
+	   tempString[count] = '\0';
+	   strcpy(r, tempString);//产生净化之后的源程序,即将净化无用字符后的字符串赋值给原字符串
+   }
+
+
+
+
+		 void Scanner(int &syn, char resourceProject[], char token[], int &pProject)
+			  {//根据DFA的状态转换图设计
+			      int i, count = 0;//count用来做token[]的指示器，收集有用字符
+			      char ch;//作为判断使用
+			     ch = resourceProject[pProject];
+			      while (ch == ' ')
+				      {//过滤空格，防止程序因识别不了空格而结束
+				          pProject++;
+				          ch = resourceProject[pProject];
+				      }
+			      for (i = 0; i<20; i++)
+				     {//每次收集前先清零
+				          token[i] = '\0';
+				      }
+			      if (IsLetter(resourceProject[pProject]))
+				      {//开头为字母
+				         token[count++] = resourceProject[pProject];//收集
+				          pProject++;//下移
+				         while (IsLetter(resourceProject[pProject]) || IsDigit(resourceProject[pProject]))
+					        {//后跟字母或数字
+					            token[count++] = resourceProject[pProject];//收集
+					             pProject++;//下移
+					          }//多读了一个字符既是下次将要开始的指针位置
+				         token[count] = '\0';
+				          syn = searchReserve(exitWord, token);//查表找到种别码
+				        if (syn == -1)
+					          {//若不是保留字则是标识符
+					              syn = 100;//标识符种别码
+					          }
+				         return;
+				   }
+				  else if (IsDigit(resourceProject[pProject]) || resourceProject[pProject] == '.')
+				  {//首字符为数字
+					  int cnt(0);
+					  if (resourceProject[pProject] == '.') cnt = 1;
+					  while (IsDigit(resourceProject[pProject]) || resourceProject[pProject] == '.')
+					  {//后跟数字或小数点
+						  token[count++] = resourceProject[pProject];//收集
+						  pProject++;
+						  if (resourceProject[pProject] == '.') { cnt++; }//如果出现了小数点则加一
+					  }//多读了一个字符既是下次将要开始的指针位置
+					  if (cnt > 1) { //出现两个或多个小数点
+						  cout << "小数格式有误!!!" << endl;
+						  for (i = 0; i < 20; i++)
+						  {//因为此输入非法，该标识符需清零
+							  token[i] = '\0';
+						  }
+					  }
+					  else if (cnt == 1 && count == 1) //出现只有一个小数点的情况
+					  {
+						  cout << "小数格式有误!!!" << endl;
+						  for (i = 0; i < 20; i++)
+						  {//因为此输入非法，该标识符需清零
+							  token[i] = '\0';
+						  }
+					  }
+					  else {  //正常情况
+						  token[count] = '\0';
+						  syn = 99;//常数种别码
+					  }
+				  }
+			      else if (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == ';' || ch == '(' || ch == ')' || ch == '^'
+				  || ch == ',' || ch == '\"' || ch == '\'' || ch == '~' || ch == '#' || ch == '%' || ch == '['
+				 || ch == ']' || ch == '{' || ch == '}' || ch == '\\' || ch == '.' || ch == '\?' || ch == ':')
+				     {//若为运算符或者界符，查表得到结果
+				         token[0] = resourceProject[pProject];
+				          token[1] = '\0';//形成单字符串
+				          for (i = 0; i<36; i++)
+					         {//查运算符界符表
+					             if (strcmp(token, operatorOrDelimiter[i]) == 0)
+						             {
+						                  syn = 33 + i;//获得种别码，使用了一点技巧，使之呈线性映射
+						                  break;//查到即推出
+						              }
+					          }
+				         pProject++;//指针下移，为下一扫描做准备
+				          return;
+				      }
+			      else  if (resourceProject[pProject] == '<')
+				      {//<,<=,<<
+				        pProject++;//后移，超前搜索
+				          if (resourceProject[pProject] == '=')
+					         {
+					              syn = 38;
+					          }
+				          else if (resourceProject[pProject] == '<')
+					          {//左移
+					              pProject--;
+					              syn = 58;
+					          }
+				         else
+					          {
+					              pProject--;
+					              syn = 37;
+					         }
+				          pProject++;//指针下移
+				         return;
+				      }
+			     else  if (resourceProject[pProject] == '>')
+				      {//>,>=,>>
+				         pProject++;
+				       if (resourceProject[pProject] == '=')
+					        {
+					             syn = 40; //>=符号
+					          }
+				          else if (resourceProject[pProject] == '>')
+					          {
+					              syn = 59; //右移符号
+					          }
+				          else
+					         {
+					              pProject--;
+					              syn = 39; //只是>符号
+					         }
+				          pProject++;
+				          return;
+				      }
+			       else  if (resourceProject[pProject] == '=')
+				     {//=.==
+				        pProject++;
+				         if (resourceProject[pProject] == '=') //==号
+					          {
+					              syn = 42;
+					          }
+				          else
+					          {
+					              pProject--;
+					              syn = 41;  //赋值号
+					          }
+				          pProject++;
+				          return;
+				      }
+			      else  if (resourceProject[pProject] == '!')
+				      {//!,!=
+				         pProject++;
+				         if (resourceProject[pProject] == '=')
+					          {
+					            syn = 43;//！=号
+					          }
+				          else
+					          {
+					              syn = 68;
+					              pProject--; //!号
+					         }
+				          pProject++;
+				          return;
+				      }
+			      else  if (resourceProject[pProject] == '&')
+				     {//&,&&
+				         pProject++;
+				          if (resourceProject[pProject] == '&')
+					          {
+					              syn = 53; 
+					          }
+				          else
+					          {
+					              pProject--;
+					              syn = 52;
+					          }
+				         pProject++;
+				          return;
+				      }
+			     else  if (resourceProject[pProject] == '|')
+				     {//|,||
+				           pProject++;
+				          if (resourceProject[pProject] == '|') //|
+					         {
+					              syn = 55;
+					          }
+				          else
+					          {
+					              pProject--;  // ||号
+					              syn = 54;
+					          }
+				          pProject++;
+				          return;
+				      }
+			     else  if (resourceProject[pProject] == '$')
+				     {//结束符
+				          syn = 0;//种别码为0
+				     }
+			      else
+				     {//不能被以上词法分析识别，则出错。
+					  cout << "error:无法识别" << endl;
+					  syn = 0;
+					  resourceProject[pProject] == '$';
+					  return ;
+				      }
+			  }
+
+
+		 int main()
+		 {
+			 //打开一个文件，读取其中的源程序
+			 char resourceProject[10000];
+			 char token[20] = { " " };
+			 int syn = -1, i;//初始化
+			 int pProject = 0;//源程序指针
+			 FILE *fp;
+			 if ((fp = fopen("D:\\词法分析器.txt", "r")) == NULL)
+			 {//打开源程序
+				 cout << "can't open this file";
+				 system("pause");
+				 return 0;
+			 }
+			 resourceProject[pProject] = fgetc(fp);
+			 while (resourceProject[pProject] != '$')
+			 {//将源程序读入resourceProject[]数组
+				 pProject++;
+				 resourceProject[pProject] = fgetc(fp);
+			 }
+			 resourceProject[++pProject] = '\0';
+			 fclose(fp);
+			 cout << endl << "源程序为:" << endl;
+			 cout << resourceProject << endl;
+			 //对源程序进行过滤
+			 filterResource(resourceProject, pProject);
+			 cout << endl << "过滤之后的程序:" << endl;
+			 cout << resourceProject << endl;
+			 pProject = 0;//从头开始读
+
+			 while (syn != 0)
+			 {
+				 //启动扫描
+				 Scanner(syn, resourceProject, token, pProject);
+				 if (syn == 100)
+				 {//标识符
+					 for (i = 0; i < 1000; i++)
+					 {//插入标识符表中
+						 if (strcmp(IDentifierTbl[i], token) == 0)
+						 {//已在表中
+							 break;
+						 }
+						 if (strcmp(IDentifierTbl[i], "") == 0)
+						 {//查找空间
+							 strcpy(IDentifierTbl[i], token);
+							 break;
+						 }
+					 }
+					 cout << "(标识符：" << token << ")" << endl;
+
+				 }
+				 else if (syn >= 1 && syn <= 32)
+				 {//保留字
+					 cout << "(" << exitWord[syn - 1] << "--)" << endl;
+
+				 }
+				 else if (syn == 99)
+				 {//const 常数
+					 cout << "(常数 ," << token << ")" << endl;;
+
+				 }
+				 else if (syn >= 33 && syn <= 68)
+				 {
+					 cout << "(" << operatorOrDelimiter[syn - 33] << ",   --)" << endl;
+
+				 }
+			 }
+				 for (i = 0; i < 100; i++)
+				 {//插入标识符表中
+					 cout << "(第" << i + 1 << "个标识符：," << IDentifierTbl[i] <<")"<< endl;
+					 
+				 }
+				 
+			 system("pause");
+			 return 0;
+		 }
